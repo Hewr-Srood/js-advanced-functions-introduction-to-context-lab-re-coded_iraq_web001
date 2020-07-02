@@ -1,69 +1,59 @@
-// Your code here
-let keys = ['firstName','familyName','title','payPerHour', 'timeInEvents', 'timeOutEvents']
+const createEmployeeRecord=(arr)=>{
+  return {firstName:arr[0], familyName:arr[1], title:arr[2], payPerHour:arr[3],timeInEvents:[], timeOutEvents:[] }
+}
+const createEmployeeRecords=(arr)=>{
 
-function createEmployeeRecord(arr) {
-  let i = 0;
-  let obj = arr.reduce((accumulator, currentValue) => {
-    accumulator[keys[i]] = currentValue;
-    i++
-    return accumulator
-  },{})
-  obj[keys[4]] = []
-  obj[keys[5]] = []
-  return obj
+
+  const newArr=[];
+   arr.map(emp =>newArr.push(createEmployeeRecord(emp)) );
+   return newArr;
+};
+
+const createTimeInEvent=(arr,dateIn)=>{
+const TimeDate=dateIn.split(" ")
+const empObj={type:"TimeIn" , date:TimeDate[0], hour:parseInt(TimeDate[1])}
+ arr.timeInEvents.push(empObj)
+  return arr
 }
 
-function createEmployeeRecords(arr) {
-  return arr.reduce((accumulator, currentValue) => {
-    accumulator.push(createEmployeeRecord(currentValue))
-      return accumulator
-    }, [])
+const createTimeOutEvent=(arr,dateOut)=>{
+const TimeDate=dateOut.split(" ")
+const empObj={type:"TimeOut" , date:TimeDate[0], hour:parseInt(TimeDate[1])}
+arr.timeOutEvents.push(empObj)
+return arr
+
 }
 
-function addTimeInAndOut(employeeRecordObj, dateTimeString, property, type) {
-  let hour = parseInt(dateTimeString.slice(11), 10)
-  employeeRecordObj[property] = []
-  employeeRecordObj[property].push({
-    type: type,
-    date: `${dateTimeString.slice(0, 10)}`,
-    hour: hour
-  })
-  return employeeRecordObj
+
+const hoursWorkedOnDate=(arr,date)=>{
+
+  const timeIn=arr.timeInEvents.find(ele => ele.date === date)
+  const timeOut=arr.timeOutEvents.find(ele => ele.date === date)
+   let result=(timeOut.hour - timeIn.hour)/100
+   return result
+  }
+
+
+const wagesEarnedOnDate=(arr,date)=>{
+  return hoursWorkedOnDate(arr,date)* arr.payPerHour
 }
 
-function createTimeInEvent(employeeRecordObj, dateTimeString) {
- return addTimeInAndOut(employeeRecordObj, dateTimeString, 'timeInEvents', "TimeIn")
+const allWagesFor=(arr)=>{
+
+  const allWages=arr.timeOutEvents.map(ele => ele.date)
+  return allWages.reduce((acc, date)=>{
+     return acc + wagesEarnedOnDate(arr,date)
+  },0)
 }
 
-function createTimeOutEvent(employeeRecordObj, dateTimeString) {
-  return addTimeInAndOut(employeeRecordObj, dateTimeString, 'timeOutEvents', "TimeOut")
+const findEmployeeByFirstName=(srcArray,firstName)=>{
+
+  return srcArray.find(ele => ele.firstName === firstName)
 }
 
-function hoursWorkedOnDate(employeeRecordObj, dateString) {
-  let timeInHour = employeeRecordObj.timeInEvents.find(element => element.date === dateString).hour
-  let timeOutHour = employeeRecordObj.timeOutEvents.find(element => element.date === dateString).hour
-  return (timeOutHour - timeInHour) / 100
-}
+const calculatePayroll=(arr)=>{
+  return arr.reduce((acc, curr)=>{
+    return acc + allWagesFor(curr)
+  },0)
 
-function wagesEarnedOnDate(employeeRecordObj, dateString) {
-  return hoursWorkedOnDate(employeeRecordObj, dateString) * employeeRecordObj.payPerHour
-}
-
-function allWagesFor(employeeRecordObj) {
-  let datesArr = employeeRecordObj.timeInEvents.map(element => element.date)
-  return datesArr.reduce((accumulator, currentValue) => {
-    accumulator += wagesEarnedOnDate(employeeRecordObj, currentValue)
-    return accumulator
-  }, 0)
-}
-
-function findEmployeeByFirstName(employeeRecordsArr, firstName) {
-  return employeeRecordsArr.find(element => element.firstName === firstName)
-}
-
-function calculatePayroll(employeeRecordsArr) {
-  return employeeRecordsArr.reduce((accumulator, currentValue) => {
-    accumulator += allWagesFor(currentValue)
-    return accumulator
-  }, 0)
 }
